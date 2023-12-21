@@ -1,11 +1,14 @@
-
 const { Keys, CasperClient, DeployUtil, CLPublicKey, RuntimeArgs, CLValueBuilder } = require('casper-js-sdk');
+const axios = require('axios');
 
 function generateNewAccount() {
-    const keyPair = Keys.Ed25519.new(); 
+    const keyPair = Keys.Ed25519.new();
+    const publicKey = keyPair.publicKey.toHex();
+    const privateKey = Buffer.from(keyPair.privateKey).toString('hex');
+
     return {
-        publicKey: keyPair.publicKey.toHex(),
-        privateKey: keyPair.privateKey.toHex()
+        publicKey: publicKey,
+        privateKey: privateKey
     };
 }
 
@@ -49,4 +52,20 @@ async function callContractMethod(nodeAddress, privateKey, contractHash, entryPo
     return deployHash;
 }
 
-module.exports = { generateNewAccount, transferFunds, callContractMethod };
+// I cannot get this to work, but I'm leaving it here for reference
+// You have to use casper-client to request tokens or sent them to your account
+async function requestTestnetTokens(publicKey) {
+    const faucetUrl = 'https://testnet.cspr.live/tools/faucet'; 
+
+    try {
+        const response = await axios.post(faucetUrl, {
+            publicKey: publicKey
+        });
+
+        console.log('Tokens requested successfully:', response.data);
+    } catch (error) {
+        console.error('Error requesting tokens:', error);
+    }
+}
+
+module.exports = { generateNewAccount, transferFunds, callContractMethod, requestTestnetTokens };
